@@ -5,6 +5,9 @@ import engine.core.MarioLevelModel;
 import engine.core.MarioTimer;
 
 public class LevelGenerator implements MarioLevelGenerator {
+
+    public LevelGenerator(){}
+
     @Override
     public String getGeneratedLevel(MarioLevelModel model, MarioTimer timer) {
         return null;
@@ -12,6 +15,6 @@ public class LevelGenerator implements MarioLevelGenerator {
 
     @Override
     public String getGeneratorName() {
-        return null;
+        return "LeandresStusalitusLevelGenerator";
     }
 }
