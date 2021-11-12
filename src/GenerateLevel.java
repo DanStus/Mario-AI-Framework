@@ -4,7 +4,7 @@ import engine.core.MarioLevelModel;
 import engine.core.MarioResult;
 import engine.core.MarioTimer;
 
-
+//test
 public class GenerateLevel {
     public static void printResults(MarioResult result) {
         System.out.println("****************************************************************");
