@@ -25,22 +25,14 @@ public class LevelGenerator implements MarioLevelGenerator {
 
         while(lastPiece != 'd'){
             System.out.print(lastPiece);
-            String chunk="";
-            try {
-                chunk = new String(Files.readAllBytes(Paths.get("./././levels/markovChainPieces/" + lastPiece+".txt")));
-            } catch (IOException e) {
-            }
-            chunk = chunk.replaceAll("\r\n", "\n");
-            int width = chunk.indexOf('\n');
-            model.copyFromString(currentWidth, 0, 0, 0, width, 16, chunk);
-            currentWidth += width;
+            currentWidth = copyChunkToLevel(model, lastPiece, currentWidth);
             double d = rand.nextDouble();
             switch(lastPiece){
                 case 'a':
                     lastPiece = 'b';
                     break;
                 case 'b':
-                    if(d >0.75)
+                    if(d >0.8)
                         lastPiece = 'd';
                     else if(d >0.6)
                         lastPiece = 'c';
@@ -59,6 +51,13 @@ public class LevelGenerator implements MarioLevelGenerator {
                     break;
             }
         }
+        copyChunkToLevel(model, lastPiece, currentWidth);
+        System.out.println(lastPiece);
+
+        return model.getMap();
+    }
+
+    private int copyChunkToLevel(MarioLevelModel model, char lastPiece, int currentWidth) {
         String chunk="";
         try {
             chunk = new String(Files.readAllBytes(Paths.get("./././levels/markovChainPieces/" + lastPiece+".txt")));
@@ -67,9 +66,7 @@ public class LevelGenerator implements MarioLevelGenerator {
         chunk = chunk.replaceAll("\r\n", "\n");
         int width = chunk.indexOf('\n');
         model.copyFromString(currentWidth, 0, 0, 0, width, 16, chunk);
-        System.out.println(lastPiece);
-
-        return model.getMap();
+        return currentWidth+width;
     }
 
     @Override
