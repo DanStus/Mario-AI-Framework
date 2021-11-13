@@ -4,6 +4,9 @@ import engine.core.MarioLevelGenerator;
 import engine.core.MarioLevelModel;
 import engine.core.MarioTimer;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Random;
 
 public class LevelGenerator implements MarioLevelGenerator {
@@ -18,24 +21,55 @@ public class LevelGenerator implements MarioLevelGenerator {
         model.clearMap();
 
         char lastPiece = 'a';
+        int currentWidth = 0;
 
         while(lastPiece != 'd'){
             System.out.print(lastPiece);
+            String chunk="";
+            try {
+                chunk = new String(Files.readAllBytes(Paths.get("./././levels/markovChainPieces/" + lastPiece+".txt")));
+            } catch (IOException e) {
+            }
+            chunk = chunk.replaceAll("\r\n", "\n");
+            int width = chunk.indexOf('\n');
+            model.copyFromString(currentWidth, 0, 0, 0, width, 16, chunk);
+            currentWidth += width;
             double d = rand.nextDouble();
             switch(lastPiece){
                 case 'a':
                     lastPiece = 'b';
                     break;
                 case 'b':
-                    if(d >0.5)
+                    if(d >0.75)
+                        lastPiece = 'd';
+                    else if(d >0.6)
                         lastPiece = 'c';
                     else
                         lastPiece = 'b';
                     break;
+                case 'c':
+                    if(d >0.8)
+                        lastPiece = 'd';
+                    else if(d >0.3)
+                        lastPiece = 'c';
+                    else
+                        lastPiece = 'b';
+                    break;
+                default:
+                    break;
             }
         }
+        String chunk="";
+        try {
+            chunk = new String(Files.readAllBytes(Paths.get("./././levels/markovChainPieces/" + lastPiece+".txt")));
+        } catch (IOException e) {
+        }
+        chunk = chunk.replaceAll("\r\n", "\n");
+        int width = chunk.indexOf('\n');
+        model.copyFromString(currentWidth, 0, 0, 0, width, 16, chunk);
+        System.out.println(lastPiece);
 
-        return null;
+        return model.getMap();
     }
 
     @Override
