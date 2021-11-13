@@ -19,12 +19,14 @@ public class LevelGenerator implements MarioLevelGenerator {
     public String getGeneratedLevel(MarioLevelModel model, MarioTimer timer) {
         this.rand = new Random();
         model.clearMap();
+        // Optional variable to store list of chunks used to generate the level
+        String stringRep = "";
 
         char lastPiece = 'a';
         int currentWidth = 0;
 
         while(lastPiece != 'd'){
-            System.out.print(lastPiece);
+            stringRep += lastPiece;
             currentWidth = copyChunkToLevel(model, lastPiece, currentWidth);
             double d = rand.nextDouble();
             switch(lastPiece){
@@ -51,12 +53,22 @@ public class LevelGenerator implements MarioLevelGenerator {
                     break;
             }
         }
+        stringRep += lastPiece;
+        System.out.println(stringRep);
+
         copyChunkToLevel(model, lastPiece, currentWidth);
-        System.out.println(lastPiece);
 
         return model.getMap();
     }
 
+    /**
+     * Copies string containing a level portion to the current model
+     *
+     * @param model Target map to copy the string to
+     * @param lastPiece Name of the string to be copied
+     * @param currentWidth Width of map that has already been filled in
+     * @return Updated value for currentWidth after copying
+     */
     private int copyChunkToLevel(MarioLevelModel model, char lastPiece, int currentWidth) {
         String chunk="";
         try {
