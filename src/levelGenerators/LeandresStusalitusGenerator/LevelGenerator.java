@@ -104,7 +104,7 @@ public class LevelGenerator implements MarioLevelGenerator {
                 }
             }
             else
-                currentPiece = "finish" + (level+1-max);
+                currentPiece = "finish" + (level+numFin-max);
         }
 
         copyChunkToLevel(model, currentPiece, currentWidth);
