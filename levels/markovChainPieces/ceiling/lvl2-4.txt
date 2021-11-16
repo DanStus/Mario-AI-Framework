@@ -6,9 +6,9 @@ SSSSSSSSSS
 ----------
 -oooo-----
 ----------
--SSSS-U---
-oS--SoS---
-SS--SSS---
+S-SSSS-U--
+SoS--SoS--
+SSS--SSS--
 ----------
 ----------
 --kk------

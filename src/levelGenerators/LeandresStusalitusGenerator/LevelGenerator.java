@@ -12,6 +12,7 @@ import java.util.Random;
 public class LevelGenerator implements MarioLevelGenerator {
 
     Random rand;
+    private String folder = "./././levels/markovChainPieces/";
 
     public LevelGenerator(){}
 
@@ -19,44 +20,36 @@ public class LevelGenerator implements MarioLevelGenerator {
     public String getGeneratedLevel(MarioLevelModel model, MarioTimer timer) {
         this.rand = new Random();
         model.clearMap();
-        // Optional variable to store list of chunks used to generate the level
-        String stringRep = "";
 
-        char lastPiece = 'a';
+        String lastPiece = "initialChunk";
         int currentWidth = 0;
 
-        while(lastPiece != 'd'){
-            stringRep += lastPiece;
-            currentWidth = copyChunkToLevel(model, String.valueOf(lastPiece), currentWidth);
+        while(!lastPiece.startsWith("finish")){
+            currentWidth = copyChunkToLevel(model, lastPiece, currentWidth);
             double d = rand.nextDouble();
             switch(lastPiece){
-                case 'a':
-                    lastPiece = 'b';
+                case "initialChunk":
+//                    if(d < 0.5){
+//                        folder += "regular/";
+//                    }
+//                    else if(d > 0.75){
+//                        folder += "ceiling/";
+//                    }
+//                    else {
+//                        folder += "platform/";
+//                    }
+                    folder += "ceiling/";
+                    lastPiece = "start";
                     break;
-                case 'b':
-                    if(d >0.8)
-                        lastPiece = 'd';
-                    else if(d >0.6)
-                        lastPiece = 'c';
-                    else
-                        lastPiece = 'b';
-                    break;
-                case 'c':
-                    if(d >0.8)
-                        lastPiece = 'd';
-                    else if(d >0.3)
-                        lastPiece = 'c';
-                    else
-                        lastPiece = 'b';
+                case "start":
+                    lastPiece = "finish1";
                     break;
                 default:
                     break;
             }
         }
-        stringRep += lastPiece;
-        System.out.println(stringRep);
 
-        copyChunkToLevel(model, String.valueOf(lastPiece), currentWidth);
+        copyChunkToLevel(model, lastPiece, currentWidth);
 
         return model.getMap();
     }
@@ -72,7 +65,7 @@ public class LevelGenerator implements MarioLevelGenerator {
     private int copyChunkToLevel(MarioLevelModel model, String chunkName, int currentWidth) {
         String chunk="";
         try {
-            chunk = new String(Files.readAllBytes(Paths.get("./././levels/markovChainPieces/" + chunkName+".txt")));
+            chunk = new String(Files.readAllBytes(Paths.get(folder + chunkName+".txt")));
         } catch (IOException e) {
         }
         chunk = chunk.replaceAll("\r\n", "\n");

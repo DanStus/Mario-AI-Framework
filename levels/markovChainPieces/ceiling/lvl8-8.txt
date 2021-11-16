@@ -8,9 +8,9 @@ SSSSSSSSSS
 ----------
 ----------
 -------S--
-SU--------
-----TT---t
-----TT---t
----kTT--kt
+----------
+---TT---tt
+---TT---tt
+--kTT--ktt
 XXXXXXXXXX
 XXXXXXXXXX
