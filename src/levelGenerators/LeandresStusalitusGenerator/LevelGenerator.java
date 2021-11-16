@@ -70,74 +70,59 @@ public class LevelGenerator implements MarioLevelGenerator {
             // And on the random value d
             d = rand.nextDouble();
             int level;
-            switch(type){
-                case REGULAR:
-                    level = (int)(d*41+1);
-                    if(level < 12){
+            switch (type) {
+                case REGULAR -> {
+                    level = (int) (d * 41 + 1);
+                    if (level < 12) {
                         currentPiece = "lvl1-" + level;
-                    }
-                    else if(level < 19){
-                        currentPiece = "lvl4-" + (level-11);
-                    }
-                    else if(level < 24){
-                        currentPiece = "lvl5-" + (level-18);
-                    }
-                    else if(level < 28){
+                    } else if (level < 19) {
+                        currentPiece = "lvl4-" + (level - 11);
+                    } else if (level < 24) {
+                        currentPiece = "lvl5-" + (level - 18);
+                    } else if (level < 28) {
                         currentPiece = "lvl7-" + (level - 23);
-                    }
-                    else if(level < 32){
+                    } else if (level < 32) {
                         currentPiece = "lvl9-" + (level - 27);
-                    }
-                    else if(level == 32){
+                    } else if (level == 32) {
                         currentPiece = "lvl11-1";
-                    }
-                    else if(level < 37){
-                        currentPiece = "lvl12-" + (level-32);
-                    }
-                    else if(level < 40){
-                        currentPiece = "lvl14-" + (level-36);
-                    }
-                    else if(level == 40){
+                    } else if (level < 37) {
+                        currentPiece = "lvl12-" + (level - 32);
+                    } else if (level < 40) {
+                        currentPiece = "lvl14-" + (level - 36);
+                    } else if (level == 40) {
                         currentPiece = "lvl15-1";
-                    }
-                    else {
+                    } else {
                         currentPiece = "finish";
                     }
-                    break;
-                case CEILING:
-                    level = (int)(d*33+1);
-                    if(level < 15){
+                }
+                case CEILING -> {
+                    level = (int) (d * 33 + 1);
+                    if (level < 15) {
                         currentPiece = "lvl2-" + level;
+                    } else if (level < 32) {
+                        currentPiece = "lvl8-" + (level - 14);
+                    } else {
+                        currentPiece = "finish" + (level - 31);
                     }
-                    else if(level < 32){
-                        currentPiece = "lvl8-" + (level-14);
-                    }
-                    else {
-                        currentPiece = "finish" + (level-31);
-                    }
-                    break;
-                case PLATFORM:
-                    level = (int)(d*26+1);
-                    if(level < 10){
+                }
+                case PLATFORM -> {
+                    level = (int) (d * 26 + 1);
+                    if (level < 10) {
                         currentPiece = "lvl3-" + level;
-                    }
-                    else if(level < 17){
-                        currentPiece = "lvl6-" + (level-9);
-                    }
-                    else if(level < 20){
-                        currentPiece = "lvl10-" + (level-16);
-                    }
-                    else if(level < 26){
-                        currentPiece = "lvl13-" + (level-19);
-                    }
-                    else {
+                    } else if (level < 17) {
+                        currentPiece = "lvl6-" + (level - 9);
+                    } else if (level < 20) {
+                        currentPiece = "lvl10-" + (level - 16);
+                    } else if (level < 26) {
+                        currentPiece = "lvl13-" + (level - 19);
+                    } else {
                         currentPiece = "finish";
                     }
-                    break;
-                default:
+                }
+                default -> {
                     System.out.println("Something went wrong and we hit a default case");
                     currentPiece = "finish";
-                    break;
+                }
             }
         }
 
