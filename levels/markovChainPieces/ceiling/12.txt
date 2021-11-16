@@ -11,6 +11,6 @@ SSSSSSSSSS
 ----------
 --SS------
 --SS------
---SS------
+--SS---r--
 --XX--XXXX
 --XX--XXXX
