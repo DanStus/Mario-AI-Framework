@@ -11,120 +11,143 @@ import java.util.Random;
 
 public class LevelGenerator implements MarioLevelGenerator {
 
-    Random rand;
-    private final int levelType;
+    public enum LevelType {
+        RANDOM,
+        REGULAR,
+        CEILING,
+        PLATFORM
+    }
+
+    private LevelType type;
+    // TODO: All new code must be in our generator package, do we need to move the chunks there as well?
     private String folder = "./././levels/markovChainPieces/";
 
-    public LevelGenerator(int levelType){
-        this.levelType = levelType;
+    public LevelGenerator(LevelType type){
+        this.type = type;
     }
 
     @Override
     public String getGeneratedLevel(MarioLevelModel model, MarioTimer timer) {
-        this.rand = new Random();
+        Random rand = new Random();
         model.clearMap();
 
-        String lastPiece = "start";
-        int currentWidth = 0;
         double d = rand.nextDouble();
 
-        if(levelType != 0){
-            switch (levelType) {
-                case 1 -> folder += "regular/";
-                case 2 -> folder += "ceiling/";
-                case 3 -> folder += "platform/";
+        if(type != LevelType.RANDOM){
+            switch (type) {
+                case REGULAR -> folder += "regular/";
+                case CEILING -> folder += "ceiling/";
+                case PLATFORM -> folder += "platform/";
             }
         }
         else if(d < 0.5){
             folder += "regular/";
+            type = LevelType.REGULAR;
         }
         else if(d > 0.75){
             folder += "ceiling/";
+            type = LevelType.CEILING;
         }
         else {
             folder += "platform/";
+            type = LevelType.PLATFORM;
         }
 
-        while(!lastPiece.startsWith("finish")){
-            currentWidth = copyChunkToLevel(model, lastPiece, currentWidth);
+        // This is the next item we are going to add to the Markov Chain
+        // Or the item we just added, depending on where we are in the code
+        String currentPiece = "start";
+
+        // This is the width of the level already filled in by chunks
+        // AKA the offset we place new chunks at
+        int currentWidth = 0;
+
+        // Add chunks to the level until we add a terminal chunk to end the level
+        while(!currentPiece.startsWith("finish")){
+            currentWidth = copyChunkToLevel(model, currentPiece, currentWidth);
+
+            // Here we choose our next chunk to be added to the level
+            // The chunk chosen depends on the level type we picked earlier
+            // And on the random value d
             d = rand.nextDouble();
             int level;
-            switch(folder.substring(folder.length()-9)){
-                case "/regular/":
+            switch(type){
+                case REGULAR:
                     level = (int)(d*41+1);
                     if(level < 12){
-                        lastPiece = "lvl1-" + level;
+                        currentPiece = "lvl1-" + level;
                     }
                     else if(level < 19){
-                        lastPiece = "lvl4-" + (level-11);
+                        currentPiece = "lvl4-" + (level-11);
                     }
                     else if(level < 24){
-                        lastPiece = "lvl5-" + (level-18);
+                        currentPiece = "lvl5-" + (level-18);
                     }
                     else if(level < 28){
-                        lastPiece = "lvl7-" + (level - 23);
+                        currentPiece = "lvl7-" + (level - 23);
                     }
                     else if(level < 32){
-                        lastPiece = "lvl9-" + (level - 27);
+                        currentPiece = "lvl9-" + (level - 27);
                     }
                     else if(level == 32){
-                        lastPiece = "lvl11-1";
+                        currentPiece = "lvl11-1";
                     }
                     else if(level < 37){
-                        lastPiece = "lvl12-" + (level-32);
+                        currentPiece = "lvl12-" + (level-32);
                     }
                     else if(level < 40){
-                        lastPiece = "lvl14-" + (level-36);
+                        currentPiece = "lvl14-" + (level-36);
                     }
                     else if(level == 40){
-                        lastPiece = "lvl15-1";
+                        currentPiece = "lvl15-1";
                     }
                     else {
-                        lastPiece = "finish";
+                        currentPiece = "finish";
                     }
                     break;
-                case "/ceiling/":
+                case CEILING:
                     level = (int)(d*33+1);
                     if(level < 15){
-                        lastPiece = "lvl2-" + level;
+                        currentPiece = "lvl2-" + level;
                     }
                     else if(level < 32){
-                        lastPiece = "lvl8-" + (level-14);
+                        currentPiece = "lvl8-" + (level-14);
                     }
                     else {
-                        lastPiece = "finish" + (level-31);
+                        currentPiece = "finish" + (level-31);
                     }
                     break;
-                case "platform/":
+                case PLATFORM:
                     level = (int)(d*26+1);
                     if(level < 10){
-                        lastPiece = "lvl3-" + level;
+                        currentPiece = "lvl3-" + level;
                     }
                     else if(level < 17){
-                        lastPiece = "lvl6-" + (level-9);
+                        currentPiece = "lvl6-" + (level-9);
                     }
                     else if(level < 20){
-                        lastPiece = "lvl10-" + (level-16);
+                        currentPiece = "lvl10-" + (level-16);
                     }
                     else if(level < 26){
-                        lastPiece = "lvl13-" + (level-19);
+                        currentPiece = "lvl13-" + (level-19);
                     }
                     else {
-                        lastPiece = "finish";
+                        currentPiece = "finish";
                     }
                     break;
                 default:
+                    System.out.println("Something went wrong and we hit a default case");
+                    currentPiece = "finish";
                     break;
             }
         }
 
-        copyChunkToLevel(model, lastPiece, currentWidth);
+        copyChunkToLevel(model, currentPiece, currentWidth);
 
         return model.getMap();
     }
 
     /**
-     * Copies string containing a level portion to the current model
+     * Copies string containing a level chunk to the current model
      *
      * @param model Target map to copy the string to
      * @param chunkName Name of the string to be copied
