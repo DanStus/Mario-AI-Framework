@@ -12,37 +12,76 @@ import java.util.Random;
 public class LevelGenerator implements MarioLevelGenerator {
 
     Random rand;
+    private final int levelType;
     private String folder = "./././levels/markovChainPieces/";
 
-    public LevelGenerator(){}
+    public LevelGenerator(int levelType){
+        this.levelType = levelType;
+    }
 
     @Override
     public String getGeneratedLevel(MarioLevelModel model, MarioTimer timer) {
         this.rand = new Random();
         model.clearMap();
 
-        String lastPiece = "initialChunk";
+        String lastPiece = "start";
         int currentWidth = 0;
+        double d = rand.nextDouble();
+
+        if(levelType != 0){
+            switch (levelType) {
+                case 1 -> folder += "regular/";
+                case 2 -> folder += "ceiling/";
+                case 3 -> folder += "platform/";
+            }
+        }
+        else if(d < 0.5){
+            folder += "regular/";
+        }
+        else if(d > 0.75){
+            folder += "ceiling/";
+        }
+        else {
+            folder += "platform/";
+        }
 
         while(!lastPiece.startsWith("finish")){
             currentWidth = copyChunkToLevel(model, lastPiece, currentWidth);
-            double d = rand.nextDouble();
-            switch(lastPiece){
-                case "initialChunk":
-//                    if(d < 0.5){
-//                        folder += "regular/";
-//                    }
-//                    else if(d > 0.75){
-//                        folder += "ceiling/";
-//                    }
-//                    else {
-//                        folder += "platform/";
-//                    }
-                    folder += "ceiling/";
-                    lastPiece = "start";
+            d = rand.nextDouble();
+            int level;
+            switch(folder.substring(folder.length()-9)){
+                case "/regular/":
+                    // Do stuff here
                     break;
-                case "start":
-                    lastPiece = "finish1";
+                case "/ceiling/":
+                    level = (int)(d*33+1);
+                    if(level < 15){
+                        lastPiece = "lvl2-" + level;
+                    }
+                    else if(level < 32){
+                        lastPiece = "lvl8-" + (level-14);
+                    }
+                    else {
+                        lastPiece = "finish" + (level-31);
+                    }
+                    break;
+                case "platform/":
+                    level = (int)(d*26+1);
+                    if(level < 10){
+                        lastPiece = "lvl3-" + level;
+                    }
+                    else if(level < 17){
+                        lastPiece = "lvl6-" + (level-9);
+                    }
+                    else if(level < 20){
+                        lastPiece = "lvl10-" + (level-16);
+                    }
+                    else if(level < 26){
+                        lastPiece = "lvl13-" + (level-19);
+                    }
+                    else {
+                        lastPiece = "finish";
+                    }
                     break;
                 default:
                     break;

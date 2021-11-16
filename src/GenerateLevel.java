@@ -3,6 +3,7 @@ import engine.core.MarioLevelGenerator;
 import engine.core.MarioLevelModel;
 import engine.core.MarioResult;
 import engine.core.MarioTimer;
+import engine.helper.GameStatus;
 
 //test
 public class GenerateLevel {
@@ -28,8 +29,13 @@ public class GenerateLevel {
 //        MarioGame game = new MarioGame();
         // printResults(game.playGame(level, 200, 0));
         //printResults(game.runGame(new agents.robinBaumgarten.Agent(), level, 20, 0, true));
-        String level = (new levelGenerators.LeandresStusalitusGenerator.LevelGenerator()).getGeneratedLevel(new MarioLevelModel(150, 16), new MarioTimer(5 * 60 * 60 * 1000));
+        String level = (new levelGenerators.LeandresStusalitusGenerator.LevelGenerator(3)).getGeneratedLevel(new MarioLevelModel(400, 16), new MarioTimer(5 * 60 * 60 * 1000));
         MarioGame game = new MarioGame();
-        printResults(game.runGame(new agents.robinBaumgarten.Agent(), level, 20, 0, true));
+        MarioResult resultAI = game.runGame(new agents.robinBaumgarten.Agent(), level, 300, 0, true);
+        printResults(resultAI);
+        if(resultAI.getGameStatus() == GameStatus.LOSE){
+            MarioResult resultHuman = game.runGame(new agents.human.Agent(), level, 300, 0, true);
+            printResults(resultHuman);
+        }
     }
 }
