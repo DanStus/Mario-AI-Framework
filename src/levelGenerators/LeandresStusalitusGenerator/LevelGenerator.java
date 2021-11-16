@@ -19,11 +19,16 @@ public class LevelGenerator implements MarioLevelGenerator {
     }
 
     private LevelType type;
+    private double difficulty;
     // TODO: All new code must be in our generator package, do we need to move the chunks there as well?
     private String folder = "./././levels/markovChainPieces/";
 
-    public LevelGenerator(LevelType type){
+    public LevelGenerator(LevelType type, double difficulty){
         this.type = type;
+        if(difficulty >= 0 && difficulty <= 2)
+            this.difficulty = difficulty;
+        else
+            this.difficulty = 1;
     }
 
     @Override
@@ -85,8 +90,19 @@ public class LevelGenerator implements MarioLevelGenerator {
             int level = (int)(d * max + 1);
             // If we have a chunk that does not contain a chunk the name is just a number
             // Otherwise the name is finish + a number
-            if(level < max-numFin)
+            if(level < max-numFin) {
                 currentPiece = String.valueOf(level);
+                if(difficulty > 1){
+                    d = rand.nextDouble() + 1;
+                    if(d > difficulty)
+                        currentPiece = currentPiece + "-h";
+                }
+                else if(difficulty < 1){
+                    d = rand.nextDouble();
+                    if(d > difficulty)
+                        currentPiece = currentPiece + "-e";
+                }
+            }
             else
                 currentPiece = "finish" + (level+1-max);
         }
