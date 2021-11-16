@@ -90,7 +90,7 @@ public class LevelGenerator implements MarioLevelGenerator {
             int level = (int)(d * max + 1);
             // If we have a chunk that does not contain a chunk the name is just a number
             // Otherwise the name is finish + a number
-            if(level < max-numFin) {
+            if(level <= max-numFin) {
                 currentPiece = String.valueOf(level);
                 if(difficulty > 1){
                     d = rand.nextDouble() + 1;
