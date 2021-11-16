@@ -51,7 +51,37 @@ public class LevelGenerator implements MarioLevelGenerator {
             int level;
             switch(folder.substring(folder.length()-9)){
                 case "/regular/":
-                    // Do stuff here
+                    level = (int)(d*41+1);
+                    if(level < 12){
+                        lastPiece = "lvl1-" + level;
+                    }
+                    else if(level < 19){
+                        lastPiece = "lvl4-" + (level-11);
+                    }
+                    else if(level < 24){
+                        lastPiece = "lvl5-" + (level-18);
+                    }
+                    else if(level < 28){
+                        lastPiece = "lvl7-" + (level - 23);
+                    }
+                    else if(level < 32){
+                        lastPiece = "lvl9-" + (level - 27);
+                    }
+                    else if(level == 32){
+                        lastPiece = "lvl11-1";
+                    }
+                    else if(level < 37){
+                        lastPiece = "lvl12-" + (level-32);
+                    }
+                    else if(level < 40){
+                        lastPiece = "lvl14-" + (level-36);
+                    }
+                    else if(level == 40){
+                        lastPiece = "lvl15-1";
+                    }
+                    else {
+                        lastPiece = "finish";
+                    }
                     break;
                 case "/ceiling/":
                     level = (int)(d*33+1);
