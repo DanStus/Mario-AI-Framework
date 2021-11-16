@@ -42,7 +42,7 @@ public class LevelGenerator implements MarioLevelGenerator {
         int max = 1;
         int numFin = 1;
 
-        if(type != LevelType.RANDOM){
+        if(type == LevelType.RANDOM){
             d = rand.nextDouble();
             if(d < 0.5){
                 type = LevelType.REGULAR;
