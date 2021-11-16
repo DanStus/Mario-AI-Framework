@@ -31,26 +31,39 @@ public class LevelGenerator implements MarioLevelGenerator {
         Random rand = new Random();
         model.clearMap();
 
-        double d = rand.nextDouble();
+        double d;
+
+        // This is the number of levels we have to choose from for a given type
+        int max = 1;
+        int numFin = 1;
 
         if(type != LevelType.RANDOM){
-            switch (type) {
-                case REGULAR -> folder += "regular/";
-                case CEILING -> folder += "ceiling/";
-                case PLATFORM -> folder += "platform/";
+            d = rand.nextDouble();
+            if(d < 0.5){
+                type = LevelType.REGULAR;
+            }
+            else if(d > 0.75){
+                type = LevelType.CEILING;
+            }
+            else {
+                type = LevelType.PLATFORM;
             }
         }
-        else if(d < 0.5){
-            folder += "regular/";
-            type = LevelType.REGULAR;
-        }
-        else if(d > 0.75){
-            folder += "ceiling/";
-            type = LevelType.CEILING;
-        }
-        else {
-            folder += "platform/";
-            type = LevelType.PLATFORM;
+
+        switch (type) {
+            case REGULAR -> {
+                folder += "regular/";
+                max = 41;
+            }
+            case CEILING -> {
+                folder += "ceiling/";
+                max = 33;
+                numFin = 2;
+            }
+            case PLATFORM -> {
+                folder += "platform/";
+                max = 26;
+            }
         }
 
         // This is the next item we are going to add to the Markov Chain
@@ -69,61 +82,13 @@ public class LevelGenerator implements MarioLevelGenerator {
             // The chunk chosen depends on the level type we picked earlier
             // And on the random value d
             d = rand.nextDouble();
-            int level;
-            switch (type) {
-                case REGULAR -> {
-                    level = (int) (d * 41 + 1);
-                    if (level < 12) {
-                        currentPiece = "lvl1-" + level;
-                    } else if (level < 19) {
-                        currentPiece = "lvl4-" + (level - 11);
-                    } else if (level < 24) {
-                        currentPiece = "lvl5-" + (level - 18);
-                    } else if (level < 28) {
-                        currentPiece = "lvl7-" + (level - 23);
-                    } else if (level < 32) {
-                        currentPiece = "lvl9-" + (level - 27);
-                    } else if (level == 32) {
-                        currentPiece = "lvl11-1";
-                    } else if (level < 37) {
-                        currentPiece = "lvl12-" + (level - 32);
-                    } else if (level < 40) {
-                        currentPiece = "lvl14-" + (level - 36);
-                    } else if (level == 40) {
-                        currentPiece = "lvl15-1";
-                    } else {
-                        currentPiece = "finish";
-                    }
-                }
-                case CEILING -> {
-                    level = (int) (d * 33 + 1);
-                    if (level < 15) {
-                        currentPiece = "lvl2-" + level;
-                    } else if (level < 32) {
-                        currentPiece = "lvl8-" + (level - 14);
-                    } else {
-                        currentPiece = "finish" + (level - 31);
-                    }
-                }
-                case PLATFORM -> {
-                    level = (int) (d * 26 + 1);
-                    if (level < 10) {
-                        currentPiece = "lvl3-" + level;
-                    } else if (level < 17) {
-                        currentPiece = "lvl6-" + (level - 9);
-                    } else if (level < 20) {
-                        currentPiece = "lvl10-" + (level - 16);
-                    } else if (level < 26) {
-                        currentPiece = "lvl13-" + (level - 19);
-                    } else {
-                        currentPiece = "finish";
-                    }
-                }
-                default -> {
-                    System.out.println("Something went wrong and we hit a default case");
-                    currentPiece = "finish";
-                }
-            }
+            int level = (int)(d * max + 1);
+            // If we have a chunk that does not contain a chunk the name is just a number
+            // Otherwise the name is finish + a number
+            if(level < max-numFin)
+                currentPiece = String.valueOf(level);
+            else
+                currentPiece = "finish" + (level+1-max);
         }
 
         copyChunkToLevel(model, currentPiece, currentWidth);
