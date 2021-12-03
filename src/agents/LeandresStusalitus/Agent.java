@@ -16,6 +16,11 @@ public class Agent implements MarioAgent {
 
     @Override
     public boolean[] getActions(MarioForwardModel model, MarioTimer timer) {
+        // Potentially useful methods
+        // getEnemiesFloatPos
+        // getMarioScreenTilePos
+        // getScreenCompleteObservation
+        // getScreenEnemiesObservation
         return new boolean[0];
     }
 
