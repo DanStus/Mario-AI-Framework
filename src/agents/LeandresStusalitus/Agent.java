@@ -21,6 +21,6 @@ public class Agent implements MarioAgent {
 
     @Override
     public String getAgentName() {
-        return "LeandresStusalitus";
+        return "LeandresStusalitusAgent";
     }
 }
