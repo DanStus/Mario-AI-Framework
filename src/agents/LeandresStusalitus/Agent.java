@@ -21,7 +21,11 @@ public class Agent implements MarioAgent {
         // getMarioScreenTilePos
         // getScreenCompleteObservation
         // getScreenEnemiesObservation
-        return new boolean[0];
+        int[][] screen = model.getScreenCompleteObservation(0,0);
+        int[] pos = model.getMarioScreenTilePos();
+        if(screen[pos[0]+1][pos[1]] == 2 || screen[pos[0]+2][pos[1]] == 2)
+            return new boolean[]{false, true, false, true, true};
+        return new boolean[]{false, true, false, true, false};
     }
 
     @Override
