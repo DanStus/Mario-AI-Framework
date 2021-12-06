@@ -66,6 +66,9 @@ public class Agent implements MarioAgent {
         if((jumpEnemy(pos, screen) || jumpGap(pos, level)  || obstacle) && willJumpingDoAnything && !isMarioFalling)
             return new boolean[]{false, true, false, true, true};
 
+        if(jumpEnemy(pos, screen) && isMarioFalling)
+            return new boolean[]{false, false, false, false, false};
+
         // Go right
         return new boolean[]{false, true, false, true, false};
     }
