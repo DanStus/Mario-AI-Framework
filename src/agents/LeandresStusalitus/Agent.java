@@ -61,12 +61,15 @@ public class Agent implements MarioAgent {
             return new boolean[]{false, true, false, true, true};
 
         int[][] level = model.getScreenSceneObservation(2);
-        if(level[pos[0]+1][pos[1]] != 0 || level[pos[0]+2][pos[1]] != 0 || level[pos[0]+3][pos[1]] != 0)
+        if((level[pos[0]+1][pos[1]] != 0 || level[pos[0]+2][pos[1]] != 0 || level[pos[0]+3][pos[1]] != 0) && (model.getMarioCanJumpHigher() || model.mayMarioJump()) && !(model.getMarioFloatVelocity()[1] > 0 && !model.mayMarioJump()))
             return new boolean[]{false, true, false, true, true};
 
         if(jumpGap(pos, level)){
             return new boolean[]{false, true, false, true, true};
         }
+
+
+
 
         return new boolean[]{false, true, false, true, false};
     }
