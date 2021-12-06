@@ -57,20 +57,16 @@ public class Agent implements MarioAgent {
         // getScreenEnemiesObservation
         int[][] screen = model.getScreenCompleteObservation(0,0);
         int[] pos = model.getMarioScreenTilePos();
-        if(jumpEnemy(pos, screen))
-            return new boolean[]{false, true, false, true, true};
-
         int[][] level = model.getScreenSceneObservation(2);
-        if((level[pos[0]+1][pos[1]] != 0 || level[pos[0]+2][pos[1]] != 0 || level[pos[0]+3][pos[1]] != 0) && (model.getMarioCanJumpHigher() || model.mayMarioJump()) && !(model.getMarioFloatVelocity()[1] > 0 && !model.mayMarioJump()))
+
+        boolean obstacle = (level[pos[0]+1][pos[1]] != 0 || level[pos[0]+2][pos[1]] != 0 || level[pos[0]+3][pos[1]] != 0);
+        boolean willJumpingDoAnything = (model.getMarioCanJumpHigher() || model.mayMarioJump());
+        boolean isMarioFalling = (model.getMarioFloatVelocity()[1] > 0 && !model.mayMarioJump());
+
+        if((jumpEnemy(pos, screen) || jumpGap(pos, level)  || obstacle) && willJumpingDoAnything && !isMarioFalling)
             return new boolean[]{false, true, false, true, true};
 
-        if(jumpGap(pos, level)){
-            return new boolean[]{false, true, false, true, true};
-        }
-
-
-
-
+        // Go right
         return new boolean[]{false, true, false, true, false};
     }
 
