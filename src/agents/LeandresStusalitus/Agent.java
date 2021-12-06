@@ -30,6 +30,19 @@ public class Agent implements MarioAgent {
         return false;
     }
 
+    private boolean jumpEnemy(int[] marioPos, int[][] level){
+
+        for(int x = marioPos[0]; x <= marioPos[0]+3; x++){
+            for(int y = marioPos[1]-(x-marioPos[0]); y <= marioPos[1]+(x-marioPos[0]); y++){
+                if(y >= 0 && y <= 15 && level[x][y] == 2){
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     @Override
     public void initialize(MarioForwardModel model, MarioTimer timer) {
         this.action = new boolean[MarioActions.numberOfActions()];
@@ -44,11 +57,11 @@ public class Agent implements MarioAgent {
         // getScreenEnemiesObservation
         int[][] screen = model.getScreenCompleteObservation(0,0);
         int[] pos = model.getMarioScreenTilePos();
-        if(screen[pos[0]+1][pos[1]] == 2 || screen[pos[0]+2][pos[1]] == 2)
+        if(jumpEnemy(pos, screen))
             return new boolean[]{false, true, false, true, true};
 
         int[][] level = model.getScreenSceneObservation(2);
-        if(level[pos[0]+1][pos[1]] != 0 || level[pos[0]+2][pos[1]] != 0)
+        if(level[pos[0]+1][pos[1]] != 0 || level[pos[0]+2][pos[1]] != 0 || level[pos[0]+3][pos[1]] != 0)
             return new boolean[]{false, true, false, true, true};
 
         if(jumpGap(pos, level)){
