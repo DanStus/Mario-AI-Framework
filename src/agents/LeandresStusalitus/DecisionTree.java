@@ -79,7 +79,7 @@ public class DecisionTree {
 
     public boolean[] eval(MarioForwardModel model){
         this.model = model;
-        CanJumpNode canJump = new CanJumpNode(RIGHT_JUMP, RIGHT);
+        CanJumpNode canJump = new CanJumpNode(RIGHT_JUMP, DO_NOTHING);
         JumpEnemyNode jumpEnemy = new JumpEnemyNode(canJump, RIGHT);
         JumpGapNode jumpGap = new JumpGapNode(canJump, jumpEnemy);
         ObstacleNode obstacleNode = new ObstacleNode(canJump, jumpGap);
