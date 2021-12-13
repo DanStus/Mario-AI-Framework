@@ -10,6 +10,7 @@ import java.util.Random;
 public class Agent implements MarioAgent {
 
     private boolean[] action;
+    private DecisionTree dt;
 
     private boolean jumpGap(int[] marioPos, int[][] level){
         // Check for gaps, starting at Mario's x position and looking ahead 2
@@ -46,6 +47,7 @@ public class Agent implements MarioAgent {
     @Override
     public void initialize(MarioForwardModel model, MarioTimer timer) {
         this.action = new boolean[MarioActions.numberOfActions()];
+        dt = new DecisionTree(model);
     }
 
     @Override
@@ -65,7 +67,7 @@ public class Agent implements MarioAgent {
         if(jumpEnemy(pos, screen) && isMarioFalling)
             return new boolean[]{false, false, false, false, false};*/
 
-        DecisionTree dt = new DecisionTree(model);
+
         return dt.eval(model);
 
         // Go right
