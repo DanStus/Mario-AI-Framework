@@ -49,13 +49,14 @@ public class DecisionTree {
         }
         // If we're trying to do a new action
         else {
-            // Chance we repeat the old action (i.e. hold the buttons for the old action
-            // longer than we meant to, if we were human and not an AI)
+            // We use a RandomNode, set to use 2 random numbers, to decide if we're repeating
+            // the last action by accident or not. The average of 2 random numbers is normal
+            // curve with mean of ~0.5, so this exaggerates probabilities as they get further
+            // from 0.3. (i.e. If errorChance > 0.5, actual chance to repeat inputs is greater
+            // than errorChance, and actual chance is lower if errorChance < 0.5)
             double errorChance = 0.8 - 0.15*lastActionCount;
-            // Use a RandomNode, set to use 2 random numbers, to decide if we're repeating
-            // the last action by accident or not
             boolean[] finalAction = (new RandomNode(errorChance, true, new ReturnNode(lastAction), new ReturnNode(newAction))).eval();
-            // If we are repeating lastAction, increment counter so we don't repeat more than 5 times
+            // If we are repeating lastAction, increment counter to adjust errorChance
             if(Arrays.equals(finalAction, lastAction)){
                 lastActionCount++;
             }
