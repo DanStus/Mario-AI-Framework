@@ -6,19 +6,21 @@ import java.util.Arrays;
 
 public class DecisionTree {
 
-    private final Node LEFT, RIGHT, DO_NOTHING, LEFT_JUMP, RIGHT_JUMP, FIRE, RIGHT_FIRE, RIGHT_JUMP_FIRE;
+    private final ReturnNode LEFT, RIGHT, DO_NOTHING, LEFT_JUMP, RIGHT_JUMP, FIRE, RIGHT_FIRE, RIGHT_JUMP_FIRE;
+    private final DecisionNode areWeFalling, jumpEnemy, jumpGap, obstacleNode;
 
     private MarioForwardModel model;
 
     private boolean[] lastAction;
     private int lastActionCount;
 
-    public DecisionTree(MarioForwardModel model){
+    public DecisionTree(){
 
-        this.model = model;
+        //Initialize some variables
         lastAction = new boolean[]{false, false, false ,false, false};
         lastActionCount = 0;
 
+        // Always running([3] == true) unless specified as walk(ing) or doing nothing
         LEFT = new ReturnNode(new boolean[]{true,false,false,true,false});
         RIGHT = new ReturnNode(new boolean[]{false,true,false,true,false});
         DO_NOTHING = new ReturnNode(new boolean[]{false,false,false,true,false});
@@ -27,29 +29,43 @@ public class DecisionTree {
         FIRE = new ReturnNode(new boolean[]{false,false,true,true,false});
         RIGHT_FIRE= new ReturnNode(new boolean[]{false,true,true,true,false});
         RIGHT_JUMP_FIRE = new ReturnNode(new boolean[]{false,true,true,true,true});
+
+        //TODO add a node for checking if enemies are going to fall onto us
+        areWeFalling = new FallingNode(DO_NOTHING, RIGHT_JUMP);
+        jumpEnemy = new JumpEnemyNode(areWeFalling, RIGHT);
+        jumpGap = new JumpGapNode(areWeFalling, jumpEnemy);
+        obstacleNode = new ObstacleNode(areWeFalling, jumpGap);
     }
 
     public boolean[] eval(MarioForwardModel model){
+        // Update the model to reflect the current state of the game
         this.model = model;
-        //TODO add a node for checking if enemies are going to fall onto us
-        //TODO move these into the constructor I guess? Maybe, maybe not. We'll see
-        CanJumpNode canJump = new CanJumpNode(RIGHT_JUMP, DO_NOTHING);
-        JumpEnemyNode jumpEnemy = new JumpEnemyNode(canJump, RIGHT);
-        JumpGapNode jumpGap = new JumpGapNode(canJump, jumpEnemy);
-        ObstacleNode obstacleNode = new ObstacleNode(canJump, jumpGap);
         boolean[] newAction = obstacleNode.eval();
 
         // TODO clean this up a bit more?
+        // On average the AI repeats the old action 1.65 times whenever
+        // it tries to start doing a new series of inputs
+
+        // If we're doing the same action as before, nothing special
         if(Arrays.equals(newAction, lastAction)){
             lastActionCount = 0;
             return newAction;
         }
+        // If we're trying to do a new action
         else {
+            // Chance we repeat the old action (i.e. hold the buttons for the old action
+            // longer than we meant to, if we were human and not an AI)
+            // Makes agent highly likely to hold input for 1-2 frames longer than intended
+            // Highly unlikely to hold input for 4-5 frames longer than intended, and never
+            // holds for more than 5 frames longer than intended (b/c 0.8 - 0.16*5=0)
             double errorChance = 0.8 - 0.16*lastActionCount;
+            // Use a RandomNode to decide if we're repeating the last action by accident or not
             boolean[] finalAction = (new RandomNode(errorChance, new ReturnNode(lastAction), new ReturnNode(newAction))).eval();
+            // If we are repeating lastAction, increment counter so we don't repeat more than 5 times
             if(Arrays.equals(finalAction, lastAction)){
                 lastActionCount++;
             }
+            // If not, then update variables to reflect the new action
             else {
                 this.lastAction = newAction;
                 lastActionCount = 0;
@@ -121,18 +137,19 @@ public class DecisionTree {
         }
     }
 
-    class CanJumpNode extends DecisionNode{
-        public CanJumpNode(Node yesNode, Node noNode){
+    class FallingNode extends DecisionNode{
+        public FallingNode(Node yesNode, Node noNode){
             super(yesNode, noNode);
         }
         @Override
         public boolean[] eval(){
             if(model.getMarioFloatVelocity()[1] > 0 && !model.mayMarioJump())
-                return this.getLeaves()[1].eval();
-            else
                 return this.getLeaves()[0].eval();
+            else
+                return this.getLeaves()[1].eval();
         }
     }
+    //Code in comments to copy and paste so I don't get arthritis by the time I'm 30
     /*class JumpEnemyNode extends DecisionNode{
         public JumpEnemyNode(Node yesNode, Node noNode){
             super(yesNode, noNode);
