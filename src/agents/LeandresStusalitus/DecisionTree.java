@@ -1,7 +1,6 @@
 package agents.LeandresStusalitus;
 
 import engine.core.MarioForwardModel;
-import engine.sprites.Mario;
 
 import java.util.Arrays;
 
@@ -20,97 +19,34 @@ public class DecisionTree {
         lastAction = new boolean[]{false, false, false ,false, false};
         lastActionCount = 0;
 
-        LEFT = new Node() {
-            @Override
-            public boolean[] eval() {
-                return new boolean[]{true,false,false,true,false};
-            }
-        };
-
-        RIGHT = new Node() {
-            @Override
-            public boolean[] eval() {
-                return new boolean[]{false,true,false,true,false};
-            }
-        };
-
-        DO_NOTHING = new Node() {
-            @Override
-            public boolean[] eval() {
-                return new boolean[]{false,false,false,true,false};
-            }
-        };
-
-        LEFT_JUMP = new Node() {
-            @Override
-            public boolean[] eval() {
-                return new boolean[]{true,false,false,true,true};
-            }
-        };
-
-        RIGHT_JUMP = new Node() {
-            @Override
-            public boolean[] eval() {
-                return new boolean[]{false,true,false,true,true};
-            }
-        };
-
-        FIRE = new Node() {
-            @Override
-            public boolean[] eval() {
-                return new boolean[]{false,false,true,true,false};
-            }
-        };
-
-        RIGHT_FIRE= new Node() {
-            @Override
-            public boolean[] eval() {
-                return new boolean[]{false,true,true,true,false};
-            }
-        };
-
-        RIGHT_JUMP_FIRE = new Node() {
-            @Override
-            public boolean[] eval() {
-                return new boolean[]{false,true,true,true,true};
-            }
-        };
+        LEFT = new ReturnNode(new boolean[]{true,false,false,true,false});
+        RIGHT = new ReturnNode(new boolean[]{false,true,false,true,false});
+        DO_NOTHING = new ReturnNode(new boolean[]{false,false,false,true,false});
+        LEFT_JUMP = new ReturnNode(new boolean[]{true,false,false,true,true});
+        RIGHT_JUMP = new ReturnNode(new boolean[]{false,true,false,true,true});
+        FIRE = new ReturnNode(new boolean[]{false,false,true,true,false});
+        RIGHT_FIRE= new ReturnNode(new boolean[]{false,true,true,true,false});
+        RIGHT_JUMP_FIRE = new ReturnNode(new boolean[]{false,true,true,true,true});
     }
 
     public boolean[] eval(MarioForwardModel model){
         this.model = model;
         //TODO add a node for checking if enemies are going to fall onto us
-        //TODO find a way to dd human error via random nodes
-        //TODO move these into the constructor I guess?
+        //TODO move these into the constructor I guess? Maybe, maybe not. We'll see
         CanJumpNode canJump = new CanJumpNode(RIGHT_JUMP, DO_NOTHING);
         JumpEnemyNode jumpEnemy = new JumpEnemyNode(canJump, RIGHT);
         JumpGapNode jumpGap = new JumpGapNode(canJump, jumpEnemy);
         ObstacleNode obstacleNode = new ObstacleNode(canJump, jumpGap);
         boolean[] newAction = obstacleNode.eval();
 
-        double errorChance = 0.8 - 0.16*lastActionCount;
-
-        // This if statement is a mess and needs to be refactored as I spent
-        // 30 minutes trying to solve a problem here when the problem was
-        // actually in the Agent class. Basically, there are better ways to
-        // to do this but they weren't working because of an error in Agent
-        // and they'll work now
+        // TODO clean this up a bit more?
         if(Arrays.equals(newAction, lastAction)){
             lastActionCount = 0;
             return newAction;
         }
         else {
-            boolean[] finalAction = (new RandomNode(errorChance, new Node(){
-                @Override
-                public boolean[] eval() {
-                    return lastAction;
-                }
-            }, new Node() {
-                @Override
-                public boolean[] eval() {
-                    return newAction;
-                }
-            })).eval();
+            double errorChance = 0.8 - 0.16*lastActionCount;
+            boolean[] finalAction = (new RandomNode(errorChance, new ReturnNode(lastAction), new ReturnNode(newAction))).eval();
             if(Arrays.equals(finalAction, lastAction)){
                 lastActionCount++;
             }
