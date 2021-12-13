@@ -50,11 +50,12 @@ public class Agent implements MarioAgent {
 
     @Override
     public boolean[] getActions(MarioForwardModel model, MarioTimer timer) {
-        // Potentially useful methods
-        // getEnemiesFloatPos
-        // getMarioScreenTilePos
-        // getScreenCompleteObservation
-        // getScreenEnemiesObservation
+        //Decision tree for the 5 types of actions
+
+        //Action 3 is pressing down to shoot a fireball
+        //Check if we have the fire flower power up
+        //Check if shooting a fireball would do anything
+
         int[][] screen = model.getScreenCompleteObservation(0,0);
         int[] pos = model.getMarioScreenTilePos();
         int[][] level = model.getScreenSceneObservation(2);
