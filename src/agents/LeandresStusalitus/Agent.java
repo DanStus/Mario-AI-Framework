@@ -50,13 +50,8 @@ public class Agent implements MarioAgent {
 
     @Override
     public boolean[] getActions(MarioForwardModel model, MarioTimer timer) {
-        //Decision tree for the 5 types of actions
 
-        //Action 3 is pressing down to shoot a fireball
-        //Check if we have the fire flower power up
-        //Check if shooting a fireball would do anything
-
-        int[][] screen = model.getScreenCompleteObservation(0,0);
+        /*int[][] screen = model.getScreenCompleteObservation(0,0);
         int[] pos = model.getMarioScreenTilePos();
         int[][] level = model.getScreenSceneObservation(2);
 
@@ -68,10 +63,13 @@ public class Agent implements MarioAgent {
             return new boolean[]{false, true, false, true, true};
 
         if(jumpEnemy(pos, screen) && isMarioFalling)
-            return new boolean[]{false, false, false, false, false};
+            return new boolean[]{false, false, false, false, false};*/
+
+        DecisionTree dt = new DecisionTree(model);
+        return dt.eval(model);
 
         // Go right
-        return new boolean[]{false, true, false, true, false};
+        //return new boolean[]{false, true, false, true, false};
     }
 
     @Override
