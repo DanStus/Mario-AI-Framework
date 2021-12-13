@@ -42,10 +42,6 @@ public class DecisionTree {
         this.model = model;
         boolean[] newAction = obstacleNode.eval();
 
-        // TODO clean this up a bit more?
-        // On average the AI repeats the old action 1.65 times whenever
-        // it tries to start doing a new series of inputs
-
         // If we're doing the same action as before, nothing special
         if(Arrays.equals(newAction, lastAction)){
             lastActionCount = 0;
@@ -55,12 +51,10 @@ public class DecisionTree {
         else {
             // Chance we repeat the old action (i.e. hold the buttons for the old action
             // longer than we meant to, if we were human and not an AI)
-            // Makes agent highly likely to hold input for 1-2 frames longer than intended
-            // Highly unlikely to hold input for 4-5 frames longer than intended, and never
-            // holds for more than 5 frames longer than intended (b/c 0.8 - 0.16*5=0)
-            double errorChance = 0.8 - 0.16*lastActionCount;
-            // Use a RandomNode to decide if we're repeating the last action by accident or not
-            boolean[] finalAction = (new RandomNode(errorChance, new ReturnNode(lastAction), new ReturnNode(newAction))).eval();
+            double errorChance = 0.8 - 0.15*lastActionCount;
+            // Use a RandomNode, set to use 2 random numbers, to decide if we're repeating
+            // the last action by accident or not
+            boolean[] finalAction = (new RandomNode(errorChance, true, new ReturnNode(lastAction), new ReturnNode(newAction))).eval();
             // If we are repeating lastAction, increment counter so we don't repeat more than 5 times
             if(Arrays.equals(finalAction, lastAction)){
                 lastActionCount++;
@@ -74,6 +68,7 @@ public class DecisionTree {
         }
     }
 
+    // Node to determine if there is an enemy we need to jump over
     class JumpEnemyNode extends DecisionNode{
         public JumpEnemyNode(Node yesNode, Node noNode){
             super(yesNode, noNode);
@@ -95,6 +90,7 @@ public class DecisionTree {
         }
     }
 
+    // Node to determine if there is a gap/hole in the ground we need to jump over
     class JumpGapNode extends DecisionNode{
         //TODO change definition of gap to include the pillars in lvl 2
         int[] marioPos = model.getMarioScreenTilePos();
@@ -121,6 +117,7 @@ public class DecisionTree {
         }
     }
 
+    // Node to determine if there is an obstacle we need to jump over
     class ObstacleNode extends DecisionNode{
         public ObstacleNode(Node yesNode, Node noNode){
             super(yesNode, noNode);
@@ -137,6 +134,7 @@ public class DecisionTree {
         }
     }
 
+    // Node to determine if we are falling, and therefore is there a point to holding the jump button
     class FallingNode extends DecisionNode{
         public FallingNode(Node yesNode, Node noNode){
             super(yesNode, noNode);
@@ -149,6 +147,7 @@ public class DecisionTree {
                 return this.getLeaves()[1].eval();
         }
     }
+
     //Code in comments to copy and paste so I don't get arthritis by the time I'm 30
     /*class JumpEnemyNode extends DecisionNode{
         public JumpEnemyNode(Node yesNode, Node noNode){
