@@ -11,7 +11,7 @@ public class Agent implements MarioAgent {
 
     @Override
     public void initialize(MarioForwardModel model, MarioTimer timer) {
-        dt = new DecisionTree();
+        dt = new DecisionTree(model);
     }
 
     @Override

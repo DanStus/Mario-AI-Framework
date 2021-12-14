@@ -14,9 +14,10 @@ public class DecisionTree {
     private boolean[] lastAction;
     private int lastActionCount;
 
-    public DecisionTree(){
+    public DecisionTree(MarioForwardModel model){
 
         //Initialize some variables
+        this.model = model;
         lastAction = new boolean[]{false, false, false ,false, false};
         lastActionCount = 0;
 
