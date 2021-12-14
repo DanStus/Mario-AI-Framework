@@ -124,16 +124,7 @@ public class DecisionTree {
         }
         @Override
         public boolean[] eval(){
-            /*int[] marioPos = model.getMarioScreenTilePos();
-            int[][] level = model.getScreenCompleteObservation(0,0);
 
-            for(int x = marioPos[0]+1; x <= marioPos[0]+5; x++){
-                    if(x<16 && marioPos[1]<16 && level[x][marioPos[1]] == 2){
-                        return this.getLeaves()[0].eval();
-                }
-            }
-
-            return this.getLeaves()[1].eval();*/
             float[] pos = model.getMarioFloatPos();
             pos[0] = pos[0]/16;
             pos[1] = pos[1]/16;
@@ -161,6 +152,7 @@ public class DecisionTree {
     // would die if we fell into that we need to jump over
     class JumpGapNode extends DecisionNode{
         //TODO change definition of gap to include the pillars in lvl 2
+        // Make Mario react to pits earlier by using floats not ints
 
         public JumpGapNode(Node yesNode, Node noNode){
             super(yesNode, noNode);
@@ -169,7 +161,7 @@ public class DecisionTree {
         public boolean[] eval(){
             int[] marioPos = model.getMarioScreenTilePos();
             int[][] level = model.getScreenSceneObservation(2);
-            for (int x = marioPos[0]+1; x <= marioPos[0] + 2; x++){
+            for (int x = marioPos[0]+1; x <= marioPos[0] + 3; x++){
                 for(int y = marioPos[1]; y <= 15; y++){
                     // If we find a block, then there is no gap
                     // Skip to the next X coord
