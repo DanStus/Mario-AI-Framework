@@ -7,7 +7,7 @@ import java.util.Random;
 public class DecisionTree {
 
     private final ReturnNode LEFT, RIGHT, DO_NOTHING, LEFT_JUMP, RIGHT_JUMP, FIRE, RIGHT_FIRE, RIGHT_JUMP_FIRE, WALK_RIGHT, WALK_LEFT;
-    private final DecisionNode stall, areWeFalling, enemyBelowLong, enemyFrontLong, enemyFrontShort, jumpGap, obstacleNode;
+    private final DecisionNode stall, stallFall, shouldWeHoldJump, enemyBelowLong, enemyFrontLong, enemyFrontShort, jumpGap, obstacleNode;
     private final RandomNode walk7525;
 
     private MarioForwardModel model;
@@ -39,11 +39,12 @@ public class DecisionTree {
         walk7525 = new RandomNode(75, false, RIGHT, WALK_RIGHT);
 
         stall = new Alternator(WALK_LEFT, DO_NOTHING);
-        areWeFalling = new FallingNode(DO_NOTHING, RIGHT_JUMP);
-        obstacleNode = new ObstacleNode(areWeFalling, RIGHT);
-        jumpGap = new JumpGapNode(areWeFalling, obstacleNode);
-        enemyBelowLong = new EnemyBelowNode(stall, jumpGap);
-        enemyFrontShort = new EnemyInFrontShortRangeNode(areWeFalling, walk7525);
+        stallFall = new FallingNode(stall, RIGHT_JUMP);
+        shouldWeHoldJump = new FallingNode(RIGHT, RIGHT_JUMP);
+        obstacleNode = new ObstacleNode(shouldWeHoldJump, RIGHT);
+        jumpGap = new JumpGapNode(shouldWeHoldJump, obstacleNode);
+        enemyBelowLong = new EnemyBelowNode(stallFall, jumpGap);
+        enemyFrontShort = new EnemyInFrontShortRangeNode(stallFall, walk7525);
         enemyFrontLong = new EnemyInFrontLongRangeNode(enemyFrontShort, enemyBelowLong);
     }
 
@@ -56,6 +57,7 @@ public class DecisionTree {
         // Apply a bit of human error if we're trying to press/release left, right, or jump
         if(newAction[0] == lastAction[0] && newAction[1] == lastAction[1] && newAction[4] == lastAction[4]){
             lastActionCount = 0;
+            lastAction = newAction;
             return newAction;
         }
         // If we're trying to do a new action
@@ -110,7 +112,7 @@ public class DecisionTree {
                 if(x > pos[0]+0.5 && y > pos[1]+1){
                     // If they are reasonably more below us than in front, then who cares about them
                     // If not, then we stall to land in front
-                    if(y - pos[1] > x - pos[0] + 0.6){
+                    if(y - pos[1] < x - pos[0] - 0.6){
                         return this.getLeaves()[0].eval();
                     }
                 }
