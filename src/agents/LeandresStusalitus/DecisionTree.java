@@ -92,12 +92,33 @@ public class DecisionTree {
         }
         @Override
         public boolean[] eval(){
-            int[] marioPos = model.getMarioScreenTilePos();
+            /*int[] marioPos = model.getMarioScreenTilePos();
             int[][] level = model.getScreenCompleteObservation(0,0);
 
             for(int x = marioPos[0]+1; x <= marioPos[0]+5; x++){
                 for(int y = marioPos[1]+1; y <= marioPos[1]+(x-marioPos[0]); y++){
                     if(x<16 && y >= 0 && y <= 15 && level[x][y] == 2){
+                        return this.getLeaves()[0].eval();
+                    }
+                }
+            }*/
+
+            float[] pos = model.getMarioFloatPos();
+            float[] enemies = model.getEnemiesFloatPos();
+
+            for(int  i = 0; i < enemies.length/3; i += 3){
+                //int enemy = (int)enemies[i];
+                float x = enemies[i+1]/16;
+                float y = enemies[i+2]/16;
+                // Are they below and ahead of us?
+                // If not then we don't care
+                if(x > pos[0] && y > pos[1]){
+                    // If they are reasonably more below us than in front, then who cares about them
+                    // If not, then we stall to land in front
+                    if(y - pos[1] < x - pos[0] + 0.6){
+                        break;
+                    }
+                    else {
                         return this.getLeaves()[0].eval();
                     }
                 }
