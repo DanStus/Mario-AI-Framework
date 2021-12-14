@@ -50,18 +50,24 @@ public class DecisionTree {
         }
         // If we're trying to do a new action
         else {
-            // We use a RandomNode, set to use 2 random numbers, to decide if we're repeating
-            // the last action by accident or not. The average of 2 random numbers is normal
-            // curve with mean of ~0.5, so this exaggerates probabilities as they get further
-            // from 0.3. (i.e. If errorChance > 0.5, actual chance to repeat inputs is greater
-            // than errorChance, and actual chance is lower if errorChance < 0.5)
+
+            // We use a RandomNode, set to use 2 random numbers, to decide if we're holding the
+            // last action for another frame by accident or not. The average of 2 random numbers
+            // tends towards 0.5, so this exaggerates probabilities as they get further from 0.5.
+            // (i.e. If errorChance > 0.5, actual chance to repeat inputs is greater than errorChance,
+            // and actual chance is lower if errorChance < 0.5) This is a more accurate simulation
+            // of human error than using just 1 random number would be.
+
+
+            // Average number of extra frames the old action is held for = 2.054
+
             double errorChance = 0.8 - 0.15*lastActionCount;
             boolean[] finalAction = (new RandomNode(errorChance, true, new ReturnNode(lastAction), new ReturnNode(newAction))).eval();
             // If we are repeating lastAction, increment counter to adjust errorChance
             if(Arrays.equals(finalAction, lastAction)){
                 lastActionCount++;
             }
-            // If not, then update variables to reflect the new action
+            // If not, then update variables to reflect the new action we are taking
             else {
                 this.lastAction = newAction;
                 lastActionCount = 0;
@@ -70,7 +76,7 @@ public class DecisionTree {
         }
     }
 
-    // Node to determine if there is an enemy we need to jump over
+    // This node checks if there is an enemy we need to jump over
     class JumpEnemyNode extends DecisionNode{
         public JumpEnemyNode(Node yesNode, Node noNode){
             super(yesNode, noNode);
@@ -92,7 +98,8 @@ public class DecisionTree {
         }
     }
 
-    // Node to determine if there is a gap/hole in the ground we need to jump over
+    // This node checks if there is a hole/gap in the ground we
+    // would die if we fell into that we need to jump over
     class JumpGapNode extends DecisionNode{
         //TODO change definition of gap to include the pillars in lvl 2
         int[] marioPos = model.getMarioScreenTilePos();
@@ -119,7 +126,7 @@ public class DecisionTree {
         }
     }
 
-    // Node to determine if there is an obstacle we need to jump over
+    // This node checks if there is an obstacle in our way that we need to jump over
     class ObstacleNode extends DecisionNode{
         public ObstacleNode(Node yesNode, Node noNode){
             super(yesNode, noNode);
@@ -136,7 +143,10 @@ public class DecisionTree {
         }
     }
 
-    // Node to determine if we are falling, and therefore is there a point to holding the jump button
+    // This node checks if we are falling and holding jump is useless
+    // If we are falling, execute yesNode/yesBranch
+    // If we can hold jump to perform a jump or increase the height
+    // of our jump, then execute noNode/noBranch
     class FallingNode extends DecisionNode{
         public FallingNode(Node yesNode, Node noNode){
             super(yesNode, noNode);
@@ -147,6 +157,19 @@ public class DecisionTree {
                 return this.getLeaves()[0].eval();
             else
                 return this.getLeaves()[1].eval();
+        }
+    }
+
+    // This node is a work in progress, intended to have us slow down when
+    // we are approaching enemies to reduce deaths to "human error"
+    class SlowDownBeforeEnemyNode extends DecisionNode{
+        public SlowDownBeforeEnemyNode(Node yesNode, Node noNode){
+            super(yesNode, noNode);
+        }
+        @Override
+        public boolean[] eval(){
+            //TODO implement this
+            return new boolean[5];
         }
     }
 

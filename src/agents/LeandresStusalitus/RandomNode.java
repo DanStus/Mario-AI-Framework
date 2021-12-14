@@ -4,8 +4,9 @@ import java.util.Random;
 
 public class RandomNode extends DecisionNode{
 
-    private double chanceYes;
-    private boolean doubleRandom;
+    private final double chanceYes;
+    private final boolean doubleRandom;
+
     public RandomNode(double chanceYes, boolean doubleRandom, Node yesNode, Node noNode){
         super(yesNode, noNode);
         this.chanceYes = chanceYes;
