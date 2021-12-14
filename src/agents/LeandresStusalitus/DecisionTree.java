@@ -2,8 +2,6 @@ package agents.LeandresStusalitus;
 
 import engine.core.MarioForwardModel;
 
-import java.util.Arrays;
-
 public class DecisionTree {
 
     private final ReturnNode LEFT, RIGHT, DO_NOTHING, LEFT_JUMP, RIGHT_JUMP, FIRE, RIGHT_FIRE, RIGHT_JUMP_FIRE, WALK_RIGHT;
@@ -52,8 +50,8 @@ public class DecisionTree {
         boolean[] newAction = enemyFrontLong.eval();
         //return newAction;
 
-        // If we're doing the same action as before, nothing special
-        if(newAction[4] == lastAction[4]){
+        // Apply a bit of human error if we're trying to press/release left, right, or jump
+        if(newAction[0] == lastAction[0] && newAction[1] == lastAction[1] && newAction[4] == lastAction[4]){
             lastActionCount = 0;
             return newAction;
         }
@@ -68,18 +66,22 @@ public class DecisionTree {
             // of human error than using just 1 random number would be.
 
             double errorChance = 0.8 - 0.18*lastActionCount;
-            boolean[] oldVersion = newAction;
-            oldVersion[4] = lastAction[4];
+            if(newAction[0] != lastAction[0] || newAction[1] != lastAction[1])
+                errorChance = errorChance - 0.18;
+            boolean[] oldVersion = lastAction;
+            oldVersion[2] = newAction[2];
+            oldVersion[3] = newAction[3];
             boolean[] finalAction = (new RandomNode(errorChance, true, new ReturnNode(oldVersion), new ReturnNode(newAction))).eval();
             // If we are repeating lastAction, increment counter to adjust errorChance
-            if(Arrays.equals(finalAction, lastAction)){
+            if(finalAction[0] == lastAction[0] && finalAction[1] == lastAction[1] && finalAction[4] == lastAction[4]){
                 lastActionCount++;
+                System.out.println(lastActionCount);
             }
             // If not, then update variables to reflect the new action we are taking
             else {
-                this.lastAction = newAction;
                 lastActionCount = 0;
             }
+            this.lastAction = finalAction;
             return finalAction;
         }
     }
@@ -137,7 +139,7 @@ public class DecisionTree {
             int[][] level = model.getScreenCompleteObservation(0,0);
 
             for(int x = marioPos[0]+1; x <= marioPos[0]+5; x++){
-                    if(x<16 && level[x][marioPos[1]] == 2){
+                    if(x<16 && marioPos[1]<16 && level[x][marioPos[1]] == 2){
                         return this.getLeaves()[0].eval();
                 }
             }
@@ -203,8 +205,8 @@ public class DecisionTree {
         public boolean[] eval(){
             int[] marioPos = model.getMarioScreenTilePos();
             int[][] level = model.getScreenSceneObservation(2);
-            if(level[marioPos[0]+1][marioPos[1]] != 0 || level[marioPos[0]+2][marioPos[1]] != 0 ||
-                    level[marioPos[0]+3][marioPos[1]] != 0)
+            if(marioPos[1] < 16 && (level[marioPos[0]+1][marioPos[1]] != 0 || level[marioPos[0]+2][marioPos[1]] != 0 ||
+                    level[marioPos[0]+3][marioPos[1]] != 0))
                 return this.getLeaves()[0].eval();
             else
                 return this.getLeaves()[1].eval();
