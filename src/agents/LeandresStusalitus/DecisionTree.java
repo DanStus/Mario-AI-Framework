@@ -6,7 +6,7 @@ public class DecisionTree {
 
     private final ReturnNode LEFT, RIGHT, DO_NOTHING, LEFT_JUMP, RIGHT_JUMP, FIRE, RIGHT_FIRE, RIGHT_JUMP_FIRE, WALK_RIGHT;
     private final DecisionNode areWeFalling, enemyBelowLong, enemyBelowShort, enemyFrontLong, enemyFrontShort, jumpGap, obstacleNode;
-    private final RandomNode walk5050;
+    private final RandomNode walk7525;
 
     private MarioForwardModel model;
 
@@ -33,14 +33,14 @@ public class DecisionTree {
 
         //TODO add a node for checking if enemies are going to fall onto us
 
-        walk5050 = new RandomNode(50, false, RIGHT, WALK_RIGHT);
+        walk7525 = new RandomNode(75, false, RIGHT, WALK_RIGHT);
 
         areWeFalling = new FallingNode(DO_NOTHING, RIGHT_JUMP);
         obstacleNode = new ObstacleNode(areWeFalling, RIGHT);
         jumpGap = new JumpGapNode(areWeFalling, obstacleNode);
-        enemyBelowShort = new EnemyBelowShortRangeNode(areWeFalling, RIGHT);
+        enemyBelowShort = new EnemyBelowShortRangeNode(areWeFalling, walk7525);
         enemyBelowLong = new EnemyBelowLongRangeNode(enemyBelowShort, jumpGap);
-        enemyFrontShort = new EnemyInFrontShortRangeNode(areWeFalling, walk5050);
+        enemyFrontShort = new EnemyInFrontShortRangeNode(areWeFalling, walk7525);
         enemyFrontLong = new EnemyInFrontLongRangeNode(enemyFrontShort, enemyBelowLong);
     }
 
