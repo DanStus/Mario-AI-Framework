@@ -1,7 +1,7 @@
 package agents.LeandresStusalitus;
 
 public class ReturnNode extends Node{
-    private boolean[] action;
+    private final boolean[] action;
 
     public ReturnNode(boolean[] action){
         this.action = action;

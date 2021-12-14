@@ -2,14 +2,13 @@ package agents.LeandresStusalitus;
 
 import engine.core.MarioForwardModel;
 
+import java.util.Arrays;
 import java.util.Random;
 
 public class DecisionTree {
 
-    private final ReturnNode LEFT, RIGHT, DO_NOTHING, LEFT_JUMP, RIGHT_JUMP, FIRE, RIGHT_FIRE, RIGHT_JUMP_FIRE, WALK_RIGHT, WALK_LEFT;
-    private final DecisionNode stall, stallOrJump, shouldWeHoldJump, enemyBelowLong, enemyFrontLong, jumpGap, obstacleNode;
-    private final RandomNode walk7525;
-
+    private final ReturnNode LEFT, RIGHT, DO_NOTHING, LEFT_JUMP, RIGHT_JUMP, FIRE, RIGHT_FIRE, RIGHT_JUMP_FIRE, WALK_LEFT;
+    private final DecisionNode stall, stallOrJump, shouldWeHoldJump, enemyBelow, enemyInFront, jumpGap, obstacleNode;
     private MarioForwardModel model;
 
     private boolean[] lastAction;
@@ -31,61 +30,59 @@ public class DecisionTree {
         FIRE = new ReturnNode(new boolean[]{false,false,true,true,false});
         RIGHT_FIRE= new ReturnNode(new boolean[]{false,true,true,true,false});
         RIGHT_JUMP_FIRE = new ReturnNode(new boolean[]{false,true,true,true,true});
-        WALK_RIGHT = new ReturnNode(new boolean[]{false, true, false, false, false});
         WALK_LEFT = new ReturnNode(new boolean[]{true, false, false, false, false});
 
         //TODO add a node for checking if enemies are going to fall onto us
-
-        walk7525 = new RandomNode(75, false, RIGHT, WALK_RIGHT);
 
         stall = new Alternator(WALK_LEFT, DO_NOTHING);
         stallOrJump = new FallingNode(stall, RIGHT_JUMP);
         shouldWeHoldJump = new FallingNode(RIGHT, RIGHT_JUMP);
         obstacleNode = new ObstacleNode(shouldWeHoldJump, RIGHT);
         jumpGap = new JumpGapNode(shouldWeHoldJump, obstacleNode);
-        enemyBelowLong = new EnemyBelowNode(stallOrJump, jumpGap);
-        enemyFrontLong = new EnemyInFrontLongRangeNode(stallOrJump, enemyBelowLong);
+        enemyBelow = new EnemyBelowNode(stallOrJump, jumpGap);
+        enemyInFront = new EnemyInFrontNode(stallOrJump, enemyBelow);
     }
 
     public boolean[] eval(MarioForwardModel model){
         // Update the model to reflect the current state of the game
         this.model = model;
-        boolean[] newAction = enemyFrontLong.eval();
-        //return newAction;
+        // Get what we want to do next
+        boolean[] newAction = Arrays.copyOf(enemyInFront.eval(), 5);
 
-        // Apply a bit of human error if we're trying to press/release left, right, or jump
+        // If left, right, and jump stay the same, then nothing happens
+        // Otherwise apply a bit of human error
         if(newAction[0] == lastAction[0] && newAction[1] == lastAction[1] && newAction[4] == lastAction[4]){
             lastActionCount = 0;
-            lastAction = newAction;
+            lastAction = Arrays.copyOf(newAction, 5);
             return newAction;
         }
-        // If we're trying to do a new action
         else {
 
             // We use a RandomNode, set to use 2 random numbers, to decide if we're holding the
-            // last action for another frame by accident or not. The average of 2 random numbers
+            // last action for another frame(?) by accident or not. The average of 2 random numbers
             // tends towards 0.5, so this exaggerates probabilities as they get further from 0.5.
             // (i.e. If errorChance > 0.5, actual chance to repeat inputs is greater than errorChance,
             // and actual chance is lower if errorChance < 0.5) This is a more accurate simulation
             // of human error than using just 1 random number would be.
 
             double errorChance = 0.8 - 0.18*lastActionCount;
+            // If we're changing directions then reduce the amount of lag we should expect
             if(newAction[0] != lastAction[0] || newAction[1] != lastAction[1])
                 errorChance = errorChance - 0.18;
-            boolean[] oldVersion = lastAction;
-            oldVersion[2] = newAction[2];
-            oldVersion[3] = newAction[3];
-            boolean[] finalAction = (new RandomNode(errorChance, true, new ReturnNode(oldVersion), new ReturnNode(newAction))).eval();
+            // We don't care about down and speed for human error, so make sure they get updated
+            lastAction[2] = newAction[2];
+            lastAction[3] = newAction[3];
+            boolean[] finalAction = (new RandomNode(errorChance, true, new ReturnNode(lastAction), new ReturnNode(newAction))).eval();
             // If we are repeating lastAction, increment counter to adjust errorChance
             if(finalAction[0] == lastAction[0] && finalAction[1] == lastAction[1] && finalAction[4] == lastAction[4]){
                 lastActionCount++;
                 System.out.println(lastActionCount);
             }
-            // If not, then update variables to reflect the new action we are taking
+            // If not, then reset the counter
             else {
                 lastActionCount = 0;
             }
-            this.lastAction = finalAction;
+            this.lastAction = Arrays.copyOf(finalAction, 5);
             return finalAction;
         }
     }
@@ -102,7 +99,7 @@ public class DecisionTree {
             pos[1] = pos[1]/16;
             float[] enemies = model.getEnemiesFloatPos();
 
-            for(int  i = 0; i < enemies.length/3; i += 3){
+            for(int  i = 0; i < enemies.length; i += 3){
                 //int enemy = (int)enemies[i];
                 float x = enemies[i+1]/16;
                 float y = enemies[i+2]/16;
@@ -121,8 +118,8 @@ public class DecisionTree {
         }
     }
 
-    class EnemyInFrontLongRangeNode extends DecisionNode{
-        public EnemyInFrontLongRangeNode (Node yesNode, Node noNode){
+    class EnemyInFrontNode extends DecisionNode{
+        public EnemyInFrontNode(Node yesNode, Node noNode){
             super(yesNode, noNode);
         }
         @Override
@@ -142,7 +139,7 @@ public class DecisionTree {
             pos[1] = pos[1]/16;
             float[] enemies = model.getEnemiesFloatPos();
 
-            for(int  i = 0; i < enemies.length/3; i += 3){
+            for(int  i = 0; i < enemies.length; i += 3){
                 //int enemy = (int)enemies[i];
                 float x = enemies[i+1]/16;
                 float y = enemies[i+2]/16;
