@@ -6,8 +6,9 @@ import java.util.Arrays;
 
 public class DecisionTree {
 
-    private final ReturnNode LEFT, RIGHT, DO_NOTHING, LEFT_JUMP, RIGHT_JUMP, FIRE, RIGHT_FIRE, RIGHT_JUMP_FIRE;
-    private final DecisionNode areWeFalling, jumpEnemy, jumpGap, obstacleNode;
+    private final ReturnNode LEFT, RIGHT, DO_NOTHING, LEFT_JUMP, RIGHT_JUMP, FIRE, RIGHT_FIRE, RIGHT_JUMP_FIRE, WALK_RIGHT;
+    private final DecisionNode areWeFalling, enemyBelowLong, enemyBelowShort, enemyFrontLong, enemyFrontShort, jumpGap, obstacleNode;
+    private final RandomNode walk5050;
 
     private MarioForwardModel model;
 
@@ -30,21 +31,29 @@ public class DecisionTree {
         FIRE = new ReturnNode(new boolean[]{false,false,true,true,false});
         RIGHT_FIRE= new ReturnNode(new boolean[]{false,true,true,true,false});
         RIGHT_JUMP_FIRE = new ReturnNode(new boolean[]{false,true,true,true,true});
+        WALK_RIGHT = new ReturnNode(new boolean[]{false, true, false, false, false});
 
         //TODO add a node for checking if enemies are going to fall onto us
+
+        walk5050 = new RandomNode(50, false, RIGHT, WALK_RIGHT);
+
         areWeFalling = new FallingNode(DO_NOTHING, RIGHT_JUMP);
-        jumpEnemy = new JumpEnemyNode(areWeFalling, RIGHT);
-        jumpGap = new JumpGapNode(areWeFalling, jumpEnemy);
-        obstacleNode = new ObstacleNode(areWeFalling, jumpGap);
+        obstacleNode = new ObstacleNode(areWeFalling, RIGHT);
+        jumpGap = new JumpGapNode(areWeFalling, obstacleNode);
+        enemyBelowShort = new EnemyBelowShortRangeNode(areWeFalling, RIGHT);
+        enemyBelowLong = new EnemyBelowLongRangeNode(enemyBelowShort, jumpGap);
+        enemyFrontShort = new EnemyInFrontShortRangeNode(areWeFalling, walk5050);
+        enemyFrontLong = new EnemyInFrontLongRangeNode(enemyFrontShort, enemyBelowLong);
     }
 
     public boolean[] eval(MarioForwardModel model){
         // Update the model to reflect the current state of the game
         this.model = model;
-        boolean[] newAction = obstacleNode.eval();
+        boolean[] newAction = enemyFrontLong.eval();
+        //return newAction;
 
         // If we're doing the same action as before, nothing special
-        if(Arrays.equals(newAction, lastAction)){
+        if(newAction[4] == lastAction[4]){
             lastActionCount = 0;
             return newAction;
         }
@@ -58,11 +67,10 @@ public class DecisionTree {
             // and actual chance is lower if errorChance < 0.5) This is a more accurate simulation
             // of human error than using just 1 random number would be.
 
-
-            // Average number of extra frames the old action is held for = 2.054
-
-            double errorChance = 0.8 - 0.15*lastActionCount;
-            boolean[] finalAction = (new RandomNode(errorChance, true, new ReturnNode(lastAction), new ReturnNode(newAction))).eval();
+            double errorChance = 0.8 - 0.18*lastActionCount;
+            boolean[] oldVersion = newAction;
+            oldVersion[4] = lastAction[4];
+            boolean[] finalAction = (new RandomNode(errorChance, true, new ReturnNode(oldVersion), new ReturnNode(newAction))).eval();
             // If we are repeating lastAction, increment counter to adjust errorChance
             if(Arrays.equals(finalAction, lastAction)){
                 lastActionCount++;
@@ -76,9 +84,8 @@ public class DecisionTree {
         }
     }
 
-    // This node checks if there is an enemy we need to jump over
-    class JumpEnemyNode extends DecisionNode{
-        public JumpEnemyNode(Node yesNode, Node noNode){
+    class EnemyBelowLongRangeNode extends DecisionNode{
+        public EnemyBelowLongRangeNode(Node yesNode, Node noNode){
             super(yesNode, noNode);
         }
         @Override
@@ -86,11 +93,72 @@ public class DecisionTree {
             int[] marioPos = model.getMarioScreenTilePos();
             int[][] level = model.getScreenCompleteObservation(0,0);
 
-            for(int x = marioPos[0]; x <= marioPos[0]+3; x++){
-                for(int y = marioPos[1]-(x-marioPos[0]); y <= marioPos[1]+(x-marioPos[0]); y++){
+            for(int x = marioPos[0]+1; x <= marioPos[0]+5; x++){
+                for(int y = marioPos[1]+1; y <= marioPos[1]+(x-marioPos[0]); y++){
+                    if(x<16 && y >= 0 && y <= 15 && level[x][y] == 2){
+                        return this.getLeaves()[0].eval();
+                    }
+                }
+            }
+
+            return this.getLeaves()[1].eval();
+        }
+    }
+
+    class EnemyBelowShortRangeNode extends DecisionNode{
+        public EnemyBelowShortRangeNode(Node yesNode, Node noNode){
+            super(yesNode, noNode);
+        }
+        @Override
+        public boolean[] eval(){
+            int[] marioPos = model.getMarioScreenTilePos();
+            int[][] level = model.getScreenCompleteObservation(0,0);
+
+            for(int x = marioPos[0]+1; x <= marioPos[0]+3; x++){
+                for(int y = marioPos[1]+1; y <= marioPos[1]+(x-marioPos[0]); y++){
                     if(y >= 0 && y <= 15 && level[x][y] == 2){
                         return this.getLeaves()[0].eval();
                     }
+                }
+            }
+
+            return this.getLeaves()[1].eval();
+        }
+    }
+
+    class EnemyInFrontLongRangeNode extends DecisionNode{
+        public EnemyInFrontLongRangeNode (Node yesNode, Node noNode){
+            super(yesNode, noNode);
+        }
+        @Override
+        public boolean[] eval(){
+            //TODO implement this
+            int[] marioPos = model.getMarioScreenTilePos();
+            int[][] level = model.getScreenCompleteObservation(0,0);
+
+            for(int x = marioPos[0]+1; x <= marioPos[0]+5; x++){
+                    if(x<16 && level[x][marioPos[1]] == 2){
+                        return this.getLeaves()[0].eval();
+                }
+            }
+
+            return this.getLeaves()[1].eval();
+        }
+    }
+
+    class EnemyInFrontShortRangeNode extends DecisionNode{
+        public EnemyInFrontShortRangeNode (Node yesNode, Node noNode){
+            super(yesNode, noNode);
+        }
+        @Override
+        public boolean[] eval(){
+            //TODO implement this
+            int[] marioPos = model.getMarioScreenTilePos();
+            int[][] level = model.getScreenCompleteObservation(0,0);
+
+            for(int x = marioPos[0]; x <= marioPos[0]+3; x++){
+                if(level[x][marioPos[1]] == 2){
+                    return this.getLeaves()[0].eval();
                 }
             }
 
@@ -102,14 +170,14 @@ public class DecisionTree {
     // would die if we fell into that we need to jump over
     class JumpGapNode extends DecisionNode{
         //TODO change definition of gap to include the pillars in lvl 2
-        int[] marioPos = model.getMarioScreenTilePos();
-        int[][] level = model.getScreenSceneObservation(2);
 
         public JumpGapNode(Node yesNode, Node noNode){
             super(yesNode, noNode);
         }
         @Override
         public boolean[] eval(){
+            int[] marioPos = model.getMarioScreenTilePos();
+            int[][] level = model.getScreenSceneObservation(2);
             for (int x = marioPos[0]+1; x <= marioPos[0] + 2; x++){
                 for(int y = marioPos[1]; y <= 15; y++){
                     // If we find a block, then there is no gap
@@ -157,19 +225,6 @@ public class DecisionTree {
                 return this.getLeaves()[0].eval();
             else
                 return this.getLeaves()[1].eval();
-        }
-    }
-
-    // This node is a work in progress, intended to have us slow down when
-    // we are approaching enemies to reduce deaths to "human error"
-    class SlowDownBeforeEnemyNode extends DecisionNode{
-        public SlowDownBeforeEnemyNode(Node yesNode, Node noNode){
-            super(yesNode, noNode);
-        }
-        @Override
-        public boolean[] eval(){
-            //TODO implement this
-            return new boolean[5];
         }
     }
 
