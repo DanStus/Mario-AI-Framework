@@ -8,7 +8,7 @@ import java.util.Random;
 public class DecisionTree {
 
     private final ReturnNode LEFT, RIGHT, DO_NOTHING, LEFT_JUMP, RIGHT_JUMP, FIRE, RIGHT_FIRE, RIGHT_JUMP_FIRE, WALK_LEFT;
-    private final DecisionNode stall, stallOrJump, shouldWeHoldJump, enemyBelow, enemyInFront, jumpGap, obstacleNode;
+    private final DecisionNode stall, stallOrJump, shouldWeHoldJump, findLandingSpot, enemyBelow, enemyInFront, jumpGap, obstacleNode;
     private MarioForwardModel model;
 
     private boolean[] lastAction;
@@ -37,8 +37,9 @@ public class DecisionTree {
         stall = new Alternator(WALK_LEFT, DO_NOTHING);
         stallOrJump = new FallingNode(stall, RIGHT_JUMP);
         shouldWeHoldJump = new FallingNode(RIGHT, RIGHT_JUMP);
+        findLandingSpot = new FindLandingNode(LEFT, shouldWeHoldJump);
         obstacleNode = new ObstacleNode(shouldWeHoldJump, RIGHT);
-        jumpGap = new JumpGapNode(shouldWeHoldJump, obstacleNode);
+        jumpGap = new JumpGapNode(findLandingSpot, obstacleNode);
         enemyBelow = new EnemyBelowNode(stallOrJump, jumpGap);
         enemyInFront = new EnemyInFrontNode(stallOrJump, enemyBelow);
     }
@@ -161,14 +162,30 @@ public class DecisionTree {
             int[] marioPos = model.getMarioScreenTilePos();
             int[][] level = model.getScreenSceneObservation(2);
             for (int x = marioPos[0]+1; x <= marioPos[0] + 3; x++){
-                for(int y = marioPos[1]; y <= marioPos[1]+2; y++){
+                for(int y = marioPos[1]; y <= marioPos[1]+2 && y < 16; y++){
                     // If we find a block, then there is no gap
                     // Skip to the next X coord
                     if(level[x][y] != 0){
                         break;
                     }
-                    else if (y == 15){
-                        return this.getLeaves()[0].eval();
+                    else if (y == marioPos[1]+2){
+                        boolean flag1 = true, flag2 = false;
+                        for(int i = y; i < 16; i++){
+                            if (level[x][i] != 0) {
+                                flag1 = false;
+                                break;
+                            }
+                        }
+                        for(int y2 = marioPos[1]; y2 <= y; y2++){
+                            for(int x2 = x+1; x2 <= x+2; x2++){
+                                if (x2< 16 && level[x2][y2] != 0) {
+                                    flag2 = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if(flag1 || flag2)
+                            return this.getLeaves()[0].eval();
                     }
                 }
             }
@@ -235,6 +252,71 @@ public class DecisionTree {
                 flag = 1;
                 return this.getLeaves()[1].eval();
             }
+        }
+    }
+
+    //TODO clean up the duplicated comments/code in this class
+    class FindLandingNode extends DecisionNode{
+        public FindLandingNode(Node yesNode, Node noNode){
+            super(yesNode, noNode);
+        }
+        @Override
+        public boolean[] eval(){
+            if(model.isMarioOnGround() || model.getMarioCanJumpHigher())
+                return this.getLeaves()[1].eval();
+
+            int[] marioPos = model.getMarioScreenTilePos();
+            int[][] level = model.getScreenSceneObservation(2);
+
+            // Is there a hole in the ground ahead of us?
+            // If not, we don't need to do anything
+            boolean flag = true;
+            for (int x = marioPos[0]+1; x <= marioPos[0] + 3; x++){
+                for(int y = marioPos[1]; y < 16; y++){
+                    // If we find a block, then there is no gap
+                    // Skip to the next X coord
+                    // If we make it to y == 15 without finding a block then
+                    // we have a gap we need in the floor
+                    if(x < 16 && level[x][y] != 0){
+                        boolean flag2 = true;
+                        for(int y2 = y; y2 >= marioPos[1]; y--){
+                            if(level[x][y2] != 0) {
+                                flag2 = false;
+                                break;
+                            }
+                        }
+                        if(flag2)
+                            break;
+                    }
+                    else if (y == 15){
+                        flag = false;
+                    }
+                }
+
+                // If we found a hole, we don't need to finish the loop
+                if(!flag)
+                    break;
+            }
+
+            // If we didn't find a hole, we don't need to worry and can
+            // just return "No, there is no need to find a landing"
+            if(flag)
+                return this.getLeaves()[1].eval();
+
+            // Perform a simple check to see if we're going to land on something
+            for (int x = marioPos[0]+3; x <= marioPos[0]+4; x++){
+                for(int y = marioPos[1]; y < 16; y++){
+                    // If we find a block, then there is a spot to land
+                    // Answer to "do we need to find a spot to land" is no
+                    if(x< 16 && level[x][y] != 0 && y > 1 && level[x][y-1] == 0 && level[x][y-2] == 0){
+                        return this.getLeaves()[1].eval();
+                    }
+                }
+            }
+
+            // If we didn't find a spot to land, return "Yes, we
+            // need to alter our course to land safely"
+            return this.getLeaves()[0].eval();
         }
     }
 
