@@ -7,7 +7,7 @@ import java.util.Random;
 
 public class DecisionTree {
 
-    private final ReturnNode LEFT, RIGHT, DO_NOTHING, LEFT_JUMP, RIGHT_JUMP, FIRE, RIGHT_FIRE, RIGHT_JUMP_FIRE, WALK_LEFT;
+    private final ReturnNode LEFT, RIGHT, DO_NOTHING, RIGHT_JUMP, WALK_LEFT;
     private final DecisionNode stall, stallOrJump, shouldWeHoldJump, findLandingSpot, enemyBelow, enemyInFront, jumpGap, obstacleNode;
     private MarioForwardModel model;
 
@@ -25,11 +25,7 @@ public class DecisionTree {
         LEFT = new ReturnNode(new boolean[]{true,false,false,true,false});
         RIGHT = new ReturnNode(new boolean[]{false,true,false,true,false});
         DO_NOTHING = new ReturnNode(new boolean[]{false,false,false,true,false});
-        LEFT_JUMP = new ReturnNode(new boolean[]{true,false,false,true,true});
         RIGHT_JUMP = new ReturnNode(new boolean[]{false,true,false,true,true});
-        FIRE = new ReturnNode(new boolean[]{false,false,true,true,false});
-        RIGHT_FIRE= new ReturnNode(new boolean[]{false,true,true,true,false});
-        RIGHT_JUMP_FIRE = new ReturnNode(new boolean[]{false,true,true,true,true});
         WALK_LEFT = new ReturnNode(new boolean[]{true, false, false, false, false});
 
         //TODO add a node for checking if enemies are going to fall onto us
